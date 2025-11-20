@@ -1,6 +1,7 @@
-# Forensic Anti-patterns in Machine Learning Engineering 
+# OPZ-FALL2025_SQA Project
 
-## Farzana Ahmed Bhuiyan and Akond Rahman 
+## Team OPZ
+### Owen Strength, Parker Davis, and Zaim Nilgiriwala,
 
 ### Details 
 
