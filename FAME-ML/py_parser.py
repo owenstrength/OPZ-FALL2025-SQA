@@ -10,13 +10,21 @@ import os
 import constants 
 
 
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 def checkLoggingPerData(tree_object, name2track):
     '''
     Check if data used in any load/write methods is logged ... called once for one load/write operation 
     '''
+    logger.debug(f"Checking logging for data: {name2track}")
     LOGGING_EXISTS_FLAG = False 
     IMPORT_FLAG, FUNC_FLAG, ARG_FLAG  = False, False , False 
-    for stmt_ in tree_object.body:
+    
+    for i, stmt_ in enumerate(tree_object.body):
         for node_ in ast.walk(stmt_):
             if isinstance(node_, ast.Import) :
                 funcDict = node_.__dict__     
@@ -25,18 +33,30 @@ def checkLoggingPerData(tree_object, name2track):
                 for obj in import_name_objects:
                     if ( constants.LOGGING_KW in  obj.__dict__[constants.NAME_KW]): 
                         IMPORT_FLAG = True 
+                        logger.debug(f"Found logging import: {obj.__dict__[constants.NAME_KW]}")
+    
     func_decl_list = getPythonAtrributeFuncs(tree_object)
-    for func_decl_ in func_decl_list:
+    logger.debug(f"Found {len(func_decl_list)} attribute functions to check")
+    
+    for i, func_decl_ in enumerate(func_decl_list):
         func_parent_id, func_name , funcLineNo, call_arg_list = func_decl_ # the class in which the method belongs, func_name, line no, arg_list 
         
         if ( constants.LOGGING_KW in func_parent_id ) or ( constants.LOGGING_KW in func_name) : 
+            logger.debug(f"Found logging function at index {i}: {func_parent_id}.{func_name} at line {funcLineNo}")
             # print(func_parent_id, func_name, call_arg_list)  
             FUNC_FLAG = True 
             for arg_ in call_arg_list:
                 if name2track in arg_:
                     ARG_FLAG = True 
+                    logger.debug(f"Found tracked data in arguments: {arg_}")
+    
+    logger.debug(f"Logging check result - IMPORT_FLAG: {IMPORT_FLAG}, FUNC_FLAG: {FUNC_FLAG}, ARG_FLAG: {ARG_FLAG}")
     if (IMPORT_FLAG) and (FUNC_FLAG) and (ARG_FLAG):
         LOGGING_EXISTS_FLAG = True 
+        logger.info(f"Logging exists for data: {name2track}")
+    else:
+        logger.debug(f"No complete logging found for data: {name2track}")
+        
     return LOGGING_EXISTS_FLAG 
 
 
@@ -68,22 +88,36 @@ def getPythonExcepts(pyTreeObj):
 
 
 def checkAttribFuncsInExcept(expr_obj):
+    logger.debug(f"Checking attribute functions in except block with {len(expr_obj) if expr_obj else 0} expressions")
     attrib_list = []
     for expr_ in expr_obj:
         expr_dict = expr_.__dict__
         if constants.VALUE_KW in expr_dict:
             func_node = expr_dict[constants.VALUE_KW] 
             if isinstance( func_node, ast.Call ):
-                attrib_list = attrib_list + commonAttribCallBody( func_node )
+                logger.debug(f"Found Call node in except block: {type(func_node).__name__}")
+                result = commonAttribCallBody( func_node )
+                logger.debug(f"Extracted {len(result)} attribute functions from call in except block")
+                attrib_list = attrib_list + result
+    logger.info(f"Total attribute functions found in except blocks: {len(attrib_list)}")
     return attrib_list 
 
 def getPythonParseObject( pyFile ): 
-	try:
-		full_tree = ast.parse( open( pyFile ).read())    
-	except SyntaxError:
-		# print(constants.PARSING_ERROR_KW, pyFile )
-		full_tree = ast.parse(constants.EMPTY_STRING) 
-	return full_tree 
+    logger.debug(f"Parsing file: {pyFile}")
+    try:
+        with open(pyFile, 'r', encoding='utf-8') as f:
+            file_content = f.read()
+        logger.debug(f"File {pyFile} read successfully, length: {len(file_content)}")
+        full_tree = ast.parse(file_content)    
+        logger.debug(f"File {pyFile} parsed successfully")
+    except SyntaxError as e:
+        logger.warning(f"Syntax error parsing {pyFile}: {e}")
+        # print(constants.PARSING_ERROR_KW, pyFile )
+        full_tree = ast.parse(constants.EMPTY_STRING) 
+    except Exception as e:
+        logger.error(f"Error reading or parsing {pyFile}: {e}")
+        full_tree = ast.parse(constants.EMPTY_STRING)
+    return full_tree 
 
 def commonAttribCallBody(node_):
     full_list = []
@@ -174,12 +208,19 @@ def getPythonAtrributeFuncs(pyTree):
     '''
     detects func like class.funcName() 
     '''
+    logger.debug("Starting to extract attribute functions from AST")
     attrib_call_list  = [] 
+    stmt_count = 0
     for stmt_ in pyTree.body:
+        stmt_count += 1
         for node_ in ast.walk(stmt_):
             if isinstance(node_, ast.Call):
-                attrib_call_list =  attrib_call_list + commonAttribCallBody( node_ )
+                logger.debug(f"Processing call node in statement {stmt_count}")
+                result = commonAttribCallBody( node_ )
+                logger.debug(f"Found {len(result)} attribute calls in statement {stmt_count}")
+                attrib_call_list =  attrib_call_list + result
 
+    logger.info(f"Extracted {len(attrib_call_list)} attribute functions from tree")
     return attrib_call_list 
     
     
@@ -428,9 +469,16 @@ def getImport(pyTree):
     return import_list 
 
 def checkIfParsablePython( pyFile ):
-	flag = True 
-	try:
-		full_tree = ast.parse( open( pyFile ).read())    
-	except (SyntaxError, UnicodeDecodeError) as err_ :
-		flag = False 
-	return flag 	
+    logger.debug(f"Checking if file is parsable: {pyFile}")
+    flag = True 
+    try:
+        with open(pyFile, 'r', encoding='utf-8') as f:
+            file_content = f.read()
+        logger.debug(f"File {pyFile} read successfully, length: {len(file_content)}")
+        full_tree = ast.parse(file_content)    
+        logger.debug(f"File {pyFile} is parsable")
+    except (SyntaxError, UnicodeDecodeError) as err_ :
+        logger.warning(f"File {pyFile} is not parsable: {err_}")
+        flag = False 
+    logger.info(f"File {pyFile} parsable check result: {flag}")
+    return flag 	

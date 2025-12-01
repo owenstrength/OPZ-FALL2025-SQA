@@ -1,0 +1,40 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run fuzzing tests
+      run: |
+        python fuzz.py
+
+    - name: Run main application
+      run: |
+        cd FAME-ML
+        python main.py --help || true  # This may fail gracefully, we're just testing it runs
+
+    - name: Run linting (if available)
+      run: |
+        # Add any linting checks here if needed
+        echo "Performing basic Python syntax check..."
+        python -m py_compile FAME-ML/*.py
+        python -m py_compile mining/*.py

@@ -7,41 +7,57 @@ Executes the pattern matching and data flow analysis
 
 import py_parser
 import constants 
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 def getDataLoadCount( py_file ):
+    logger.info(f"Starting analysis of file: {py_file}")
     data_load_count = 0 
     py_tree = py_parser.getPythonParseObject(py_file)
     func_def_list  = py_parser.getPythonAtrributeFuncs( py_tree ) 
+    logger.debug(f"Found {len(func_def_list)} function definitions in {py_file}")
 
-    for def_ in func_def_list:
+    for i, def_ in enumerate(func_def_list):
         class_name, func_name, func_line, arg_call_list = def_ 
+        
+        logger.debug(f"Checking function {i+1}: {class_name}.{func_name} at line {func_line}")
         
         if(( class_name == constants.TORCH_KW ) and (func_name == constants.LOAD_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected TORCH load event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.DATA_KW ) and (func_name == constants.LOAD_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected DATA load event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.PICKLE_KW ) and (func_name == constants.LOAD_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected PICKLE load event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.JSON_KW ) and (func_name == constants.LOAD_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected JSON load event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.NP_KW ) and (func_name == constants.LOAD_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected NUMPY load event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.LATEST_BLOB_KW ) and (func_name == constants.DOWNLOAD_TO_FILENAME_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected BLOB download event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.BLOB_KW ) and (func_name == constants.UPLOAD_FROM_FILENAME_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected BLOB upload event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         # # skipping as per https://github.com/paser-group/MLForensics/blob/farzana/Verb.Object.Mapping.md 
@@ -51,38 +67,47 @@ def getDataLoadCount( py_file ):
             
         elif(( class_name == constants.COCO_GT_KW ) and (func_name == constants.LOADRES_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected COCO_GT load event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.YAML_KW ) and (func_name == constants.LOAD_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected YAML load event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.HUB_KW ) and (func_name == constants.LOAD_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected HUB load event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.DATA_LOADER_FACTORY_KW ) and (func_name == constants.GET_DATA_LOADER_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected DATA_LOADER_FACTORY event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.IO_KW ) and (func_name == constants.READ_FILE_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected IO read event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.DATASET_KW ) and (func_name == constants.TENSOR_SLICE_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected DATASET tensor slice event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.SP_MODEL_KW ) and (func_name == constants.LOAD_CAPITAL_KW) ):
             data_load_count += 1 
+            logger.info(f"Detected SP_MODEL load event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.TAGGING_DATA_LOADER_KW ) and (func_name == constants.LOAD_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected TAGGING_DATA_LOADER load event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.PD_KW ) and (func_name == constants.READ_CSV_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected PANDAS CSV read event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         # # skipping as per https://github.com/paser-group/MLForensics/blob/farzana/Verb.Object.Mapping.md
@@ -91,39 +116,48 @@ def getDataLoadCount( py_file ):
             
         elif(( class_name == constants.IBROSA_KW ) and (func_name == constants.LOAD_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected IBROSA load event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.DATA_UTILS_KW ) and (func_name == constants.LOAD_CELEBA_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected DATA_UTILS CELEBA load event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.DSET_KW ) and (func_name == constants.MNIST_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected DSET MNIST event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.TARFILE_KW ) and (func_name == constants.OPEN_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected TARFILE open event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.AUDIO_KW ) and (func_name == constants.LOAD_WAV_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected AUDIO WAV load event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.IMAGE_KW) and (func_name == constants.OPEN_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected IMAGE open event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
                     
         elif(( class_name == constants.REPLAY_BUFFER_KW ) and (func_name == constants.LOAD_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected REPLAY_BUFFER load event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
             
         elif(( class_name == constants.H5PY_KW ) and (func_name == constants.FILE_KW ) ):
             data_load_count += 1 
+            logger.info(f"Detected H5PY file event: {func_line} in {py_file}")
             print( constants.CONSOLE_STR_DISPLAY.format( constants.CONSOLE_STR_DATA_LOAD, func_line , py_file  ) )
 
     # LOGGING_IS_ON_FLAG = py_parser.checkLogging( py_tree,  func_def_list, 'akond' )
     # this will be used to check if the file_name passed in as file to read, is logged  
     LOGGING_IS_ON_FLAG = py_parser.checkLoggingPerData( py_tree, constants.DUMMY_LOG_KW ) 
+    logger.info(f"File analysis completed. Total data load count: {data_load_count}")
     # print(LOGGING_IS_ON_FLAG, data_load_count) 
     return data_load_count 
     

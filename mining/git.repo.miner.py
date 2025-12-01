@@ -31,11 +31,21 @@ def makeChunks(the_list, size_):
     for i in range(0, len(the_list), size_):
         yield the_list[i:i+size_]
 
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 def cloneRepo(repo_name, target_dir):
+    logger.info(f"Cloning repository: {repo_name} to {target_dir}")
     cmd_ = "git clone " + repo_name + " " + target_dir 
+    logger.debug(f"Executing command: {cmd_}")
     try:
-       subprocess.check_output(['bash','-c', cmd_])    
-    except subprocess.CalledProcessError:
+       result = subprocess.check_output(['bash','-c', cmd_])    
+       logger.info(f"Successfully cloned repository: {repo_name}")
+    except subprocess.CalledProcessError as e:
+       logger.error(f"Failed to clone repository {repo_name}: {e}")
        print('Skipping this repo ... trouble cloning repo:', repo_name )
 
 def dumpContentIntoFile(strP, fileP):
